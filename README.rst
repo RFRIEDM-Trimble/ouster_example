@@ -42,6 +42,7 @@ On macOS, install XCode and `homebrew <https://brew.sh>`_ and run::
     brew install cmake pkg-config glfw glew eigen jsoncpp tclap
 
 To build run the following commands::
+
     cd /path/to/ouster_example
     mkdir build
     cd build
@@ -51,11 +52,12 @@ To build run the following commands::
 where ``<path to ouster_example>`` is the location of the ``ouster_example`` source directory. The
 CMake build script supports several optional flags::
 
-    -DBUILD_VIZ=OFF                      Do not build the sample visualizer
+    -DBUILD_VIZ=OFF                         Do not build the sample visualizer
     -DBUILD_SHARED_LIBS=ON                  Build shared libraries (.dylib or .so)
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON    Standard flag for position independent code
     
 Like so::
+
     cd /path/to/ouster_example
     mkdir build
     cd build
