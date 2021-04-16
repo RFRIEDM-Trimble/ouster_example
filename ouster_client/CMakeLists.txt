@@ -38,7 +38,9 @@ install(
   TARGETS
     ouster_client
   DESTINATION 
-    lib)
+    lib
+  EXPORT
+    ouster_clientExport)
  
 install(
   FILES
