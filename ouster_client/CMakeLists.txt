@@ -8,44 +8,67 @@ set(ouster_client_VERSION_SUFFIX "-dev0")
 find_package(Eigen3 REQUIRED)
 find_package(jsoncpp REQUIRED)
 
-# ==== Build Metadata Target ====
-add_custom_target(generate_build_header)
-add_custom_command(TARGET generate_build_header PRE_BUILD
-  COMMAND ${CMAKE_COMMAND} -DVERSION_GEN_OUT_DIR="${CMAKE_CURRENT_BINARY_DIR}/include/ouster"
-                           -DVERSION_GEN_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/.."
-                           -DBUILD_TYPE="${CMAKE_BUILD_TYPE}"
-                           -DBUILD_SYSTEM="${CMAKE_SYSTEM_NAME}"
-                           -Douster_client_VERSION="${ouster_client_VERSION}"
-                           -Douster_client_VERSION_SUFFIX="${ouster_client_VERSION_SUFFIX}"
-  -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/VersionGen.cmake)
+# # ==== Build Metadata Target ====
+# add_custom_target(generate_build_header)
+# add_custom_command(TARGET generate_build_header PRE_BUILD
+#   COMMAND ${CMAKE_COMMAND} -DVERSION_GEN_OUT_DIR="${CMAKE_CURRENT_BINARY_DIR}/include/ouster"
+#                            -DVERSION_GEN_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/.."
+#                            -DBUILD_TYPE="${CMAKE_BUILD_TYPE}"
+#                            -DBUILD_SYSTEM="${CMAKE_SYSTEM_NAME}"
+#                            -Douster_client_VERSION="${ouster_client_VERSION}"
+#                            -Douster_client_VERSION_SUFFIX="${ouster_client_VERSION_SUFFIX}"
+#   -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/VersionGen.cmake)
 
-add_library(ouster_build INTERFACE)
-target_include_directories(ouster_build INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-add_dependencies(ouster_build generate_build_header)
+# add_library(ouster_build INTERFACE)
+# target_include_directories(ouster_build INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# add_dependencies(ouster_build generate_build_header)
 
 # ==== Libraries ====
 add_library(ouster_client src/client.cpp src/types.cpp src/netcompat.cpp src/lidar_scan.cpp)
-target_link_libraries(ouster_client PUBLIC jsoncpp_lib Eigen3::Eigen ouster_build)
+target_link_libraries(ouster_client PUBLIC jsoncpp_lib Eigen3::Eigen)
 if(WIN32)
   target_link_libraries(ouster_client PUBLIC ws2_32)
 endif()
-target_include_directories(ouster_client PUBLIC include)
+
+target_include_directories(ouster_client
+PUBLIC
+$<INSTALL_INTERFACE:include>
+$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
 # ==== Executables ====
 add_executable(ouster_client_example src/example.cpp)
-target_link_libraries(ouster_client_example ouster_client ouster_build)
-install(
-  TARGETS
-    ouster_client
-  DESTINATION 
-    lib
-  EXPORT
-    ouster_clientExport)
- 
-install(
-  FILES
-    ouster_client.h
-  DESTINATION
-    include)
-     
-  
+target_link_libraries(ouster_client_example ouster_client)
+
+# ==== Installs =====
+install(TARGETS ouster_client
+EXPORT ouster_client-export
+LIBRARY DESTINATION lib
+ARCHIVE DESTINATION lib
+)
+
+install(EXPORT ouster_client-export
+FILE
+ouster_clientTargets.cmake
+NAMESPACE
+ouster_client::
+DESTINATION
+lib/cmake/ouster_client
+)
+install(FILES
+${CMAKE_CURRENT_SOURCE_DIR}/include/ouster_client/client.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/ouster_client/lidar_scan.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/ouster_client/types.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/ouster_client/version.hpp
+DESTINATION "include/ouster_client")
+
+
+
+# include(CMakePackageConfigHelpers)
+# write_basic_package_version_file(
+# ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ouster_clientConfig.cmake
+# VERSION ${PROJECT_VERSION}
+# COMPATIBILITY SameMajorVersion)
+
+
+
